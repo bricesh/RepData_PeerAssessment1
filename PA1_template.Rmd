@@ -1,25 +1,59 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+author: "Brice Hoareau"
+date: "24 January 2016"
+output: html_document
 ---
-
 
 ## Loading and preprocessing the data
 
-
+```{r}
+activitydata <- read.csv("activity.csv")
+head(activitydata)
+summary(activitydata)
+str(activitydata)
+```
 
 ## What is mean total number of steps taken per day?
 
-
+```{r}
+dailysteps <- aggregate(formula = steps ~ date, data = activitydata, FUN = sum, na.action = na.omit)
+dailysteps
+hist(dailysteps$steps, breaks = 8)
+mean(dailysteps$steps)
+median(dailysteps$steps)
+sd(dailysteps$steps)
+```
 
 ## What is the average daily activity pattern?
 
-
+```{r}
+avgintervalsteps <- aggregate(formula = steps ~ interval, data = activitydata, FUN = mean, na.action = na.omit)
+plot(avgintervalsteps$interval, avgintervalsteps$steps, type = "l")
+avgintervalsteps[row.names(avgintervalsteps) == which.max(avgintervalsteps$steps),]$interval
+```
 
 ## Imputing missing values
 
+```{r}
+sum(is.na(activitydata$steps))
+sum(is.na(activitydata$date))
+sum(is.na(activitydata$interval))
 
+mergedact <- merge(activitydata, avgintervalsteps, by = "interval")
+mergedact[is.na(mergedact$steps.x),]$steps.x <- mergedact[is.na(mergedact$steps.x),]$steps.y
+mergedact <- mergedact[ order(mergedact[,3], mergedact[,1]), ]
+
+dailystepsnona <- aggregate(formula = steps.x ~ date, data = mergedact, FUN = sum)
+dailystepsnona
+hist(dailystepsnona$steps.x, breaks = 8)
+mean(dailystepsnona$steps.x)
+median(dailystepsnona$steps.x)
+sd(dailystepsnona$steps.x)
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+
+```

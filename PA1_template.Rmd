@@ -2,55 +2,96 @@
 title: "Reproducible Research: Peer Assessment 1"
 author: "Brice Hoareau"
 date: "24 January 2016"
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 ## Loading and preprocessing the data
 
+Load the data from "activity.csv" and inspect:
 ```{r}
 activitydata <- read.csv("activity.csv")
-head(activitydata)
 summary(activitydata)
 str(activitydata)
 ```
 
+No preprocessing necessary.
+
 ## What is mean total number of steps taken per day?
 
-```{r}
+Calculate the total number of steps taken per day:
+```{r results='asis'}
+library(xtable)
 dailysteps <- aggregate(formula = steps ~ date, data = activitydata, FUN = sum, na.action = na.omit)
-dailysteps
-hist(dailysteps$steps, breaks = 8)
-mean(dailysteps$steps)
-median(dailysteps$steps)
-sd(dailysteps$steps)
+print(xtable(dailysteps), type = "html")
 ```
+
+```{r}
+hist(dailysteps$steps, breaks = 8)
+```
+
+Histogram of the total number of steps taken each day.
+
+```{r}
+dailymean <- mean(dailysteps$steps)
+dailymedian <- median(dailysteps$steps)
+```
+
+The mean and median of the total number of steps taken per day are __`r dailymean`__ and __`r dailymedian`__ respectively.
 
 ## What is the average daily activity pattern?
 
+Time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days:
 ```{r}
 avgintervalsteps <- aggregate(formula = steps ~ interval, data = activitydata, FUN = mean, na.action = na.omit)
 plot(avgintervalsteps$interval, avgintervalsteps$steps, type = "l")
+```
+
+The 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps is:
+```{r}
 avgintervalsteps[row.names(avgintervalsteps) == which.max(avgintervalsteps$steps),]$interval
 ```
 
 ## Imputing missing values
 
+The total number of missing values in the dataset is
 ```{r}
 sum(is.na(activitydata$steps))
+```
+
+Confirm that the other variables do not have NAs:
+```{r}
 sum(is.na(activitydata$date))
 sum(is.na(activitydata$interval))
+```
 
+__Imputing strategy:__ use the interval average calculated in the above section and to replace NAs with interval average.
+
+Calculate the total number of steps taken per day after imputing:
+```{r results='asis'}
 mergedact <- merge(activitydata, avgintervalsteps, by = "interval")
 mergedact[is.na(mergedact$steps.x),]$steps.x <- mergedact[is.na(mergedact$steps.x),]$steps.y
 mergedact <- mergedact[ order(mergedact[,3], mergedact[,1]), ]
 
 dailystepsnona <- aggregate(formula = steps.x ~ date, data = mergedact, FUN = sum)
-dailystepsnona
-hist(dailystepsnona$steps.x, breaks = 8)
-mean(dailystepsnona$steps.x)
-median(dailystepsnona$steps.x)
-sd(dailystepsnona$steps.x)
+print(xtable(dailystepsnona), type = "html")
 ```
+
+```{r}
+hist(dailystepsnona$steps.x, breaks = 8)
+```
+
+Histogram of the total number of steps taken each day.
+
+```{r}
+imputeddailymean <- mean(dailystepsnona$steps.x)
+imputeddailymedian <- median(dailystepsnona$steps.x)
+```
+
+The mean and median of the total number of steps taken per day are __`r imputeddailymean`__ and __`r imputeddailymedian`__ respectively.
+
+After imputing values for NA, the mean and median have changed ever so slightly. However looking at the histogram, it looks like the variance in the data has decreased.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 

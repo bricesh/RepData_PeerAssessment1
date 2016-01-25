@@ -53,7 +53,7 @@ print(xtable(dailysteps), type = "html")
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Sun Jan 24 23:10:51 2016 -->
+<!-- Mon Jan 25 00:36:50 2016 -->
 <table border=1>
 <tr> <th>  </th> <th> date </th> <th> steps </th>  </tr>
   <tr> <td align="right"> 1 </td> <td> 2012-10-02 </td> <td align="right"> 126 </td> </tr>
@@ -193,7 +193,7 @@ print(xtable(dailystepsnona), type = "html")
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Sun Jan 24 23:10:51 2016 -->
+<!-- Mon Jan 25 00:36:51 2016 -->
 <table border=1>
 <tr> <th>  </th> <th> date </th> <th> steps.x </th>  </tr>
   <tr> <td align="right"> 1 </td> <td> 2012-10-01 </td> <td align="right"> 10766.19 </td> </tr>
@@ -281,3 +281,26 @@ After imputing values for NA, the mean and median have changed ever so slightly.
 ## Are there differences in activity patterns between weekdays and weekends?
 
 
+```r
+mergedact[,"dayname"] <- weekdays(as.Date(mergedact$date), abbr = TRUE)
+mergedact[,"weekend"] <- grepl("S(at|un)", mergedact$dayname)
+
+dailystepsnonaweekend <- aggregate(formula = steps.x ~ interval + weekend, data = mergedact, FUN = mean)
+
+library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.2.3
+```
+
+```r
+g <- ggplot(data = dailystepsnonaweekend, aes(x=interval, y=steps.x))
+g <- g + geom_path()
+g <- g + facet_grid(weekend ~ .)
+g
+```
+
+![](activitymonitor_files/figure-html/unnamed-chunk-12-1.png) 
+
+__CONCLUSION:__ there is more activity during the weekend.

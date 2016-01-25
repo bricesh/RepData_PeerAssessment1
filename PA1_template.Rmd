@@ -4,6 +4,7 @@ author: "Brice Hoareau"
 date: "24 January 2016"
 output: 
   html_document: 
+    fig_caption: yes
     keep_md: yes
 ---
 
@@ -78,7 +79,7 @@ dailystepsnona <- aggregate(formula = steps.x ~ date, data = mergedact, FUN = su
 print(xtable(dailystepsnona), type = "html")
 ```
 
-```{r}
+```{r }
 hist(dailystepsnona$steps.x, breaks = 8)
 ```
 
@@ -96,5 +97,16 @@ After imputing values for NA, the mean and median have changed ever so slightly.
 ## Are there differences in activity patterns between weekdays and weekends?
 
 ```{r}
+mergedact[,"dayname"] <- weekdays(as.Date(mergedact$date), abbr = TRUE)
+mergedact[,"weekend"] <- grepl("S(at|un)", mergedact$dayname)
 
+dailystepsnonaweekend <- aggregate(formula = steps.x ~ interval + weekend, data = mergedact, FUN = mean)
+
+library(ggplot2)
+g <- ggplot(data = dailystepsnonaweekend, aes(x=interval, y=steps.x))
+g <- g + geom_path()
+g <- g + facet_grid(weekend ~ .)
+g
 ```
+
+__CONCLUSION:__ there is more activity during the weekend.
